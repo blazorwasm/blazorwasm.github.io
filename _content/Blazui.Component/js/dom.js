@@ -33,32 +33,32 @@ window.clear = function (el) {
     }
     el.value = null;
 };
-window.executePasteUpload = async function (event) {
-    var items = event.clipboardData && event.clipboardData.items;
-    var files = [];
-    if (items && items.length) {
-        // 检索剪切板items
-        for (var i = items.length - 1; i >= 0; i--) {
-            if (items[i].kind != "file") {
-                continue;
-            }
-            file = items[i].getAsFile();
-            files.push(file);
-            break;
-        }
-    }
+// window.executePasteUpload = async function (event) {
+//     var items = event.clipboardData && event.clipboardData.items;
+//     var files = [];
+//     if (items && items.length) {
+//         // 检索剪切板items
+//         for (var i = items.length - 1; i >= 0; i--) {
+//             if (items[i].kind != "file") {
+//                 continue;
+//             }
+//             file = items[i].getAsFile();
+//             files.push(file);
+//             break;
+//         }
+//     }
 
-    var ids = await convertFiles(files).then(async fs => {
-        return await uploader.invokeMethodAsync("previewFiles", fs);
-    });
-    for (var j = 0; j < files.length; j++) {
-        var result = await new Promise(resolver => {
-            _uploadFile(uploadUrl, files[j], resolver);
-        });
-        await uploader.invokeMethodAsync("fileUploaded", result, ids[j]);
-    }
-    await uploader.invokeMethodAsync("filesUploaded");
-};
+//     var ids = await convertFiles(files).then(async fs => {
+//         return await uploader.invokeMethodAsync("previewFiles", fs);
+//     });
+//     for (var j = 0; j < files.length; j++) {
+//         var result = await new Promise(resolver => {
+//             _uploadFile(uploadUrl, files[j], resolver);
+//         });
+//         await uploader.invokeMethodAsync("fileUploaded", result, ids[j]);
+//     }
+//     await uploader.invokeMethodAsync("filesUploaded");
+// };
 window.registerPasteUpload = function (upload, url) {
     uploader = upload;
     uploadUrl = url;
@@ -67,36 +67,36 @@ window.registerPasteUpload = function (upload, url) {
 window.unRegisterPasteUpload = function () {
     this.document.removeEventListener("paste");
 };
-function convertFiles(files) {
-    var scanFile = function (file) {
-        return new Promise((resolver) => {
-            var infos = [file.name, file.size.toString()];
-            if (file.type.indexOf("image") != -1) {
-                var img = new Image();
-                img.onload = function () {
-                    infos.push(this.width.toString());
-                    infos.push(this.height.toString());
-                    infos.push(img.src);
-                    resolver(infos);
-                };
-                img.src = URL.createObjectURL(file);
-                return;
-            }
-            resolver(infos);
-        });
-    };
-    var filePromises = [];
-    for (var i = 0; i < files.length; i++) {
-        var file = files.item ? files.item(i) : files[i];
+// function convertFiles(files) {
+//     var scanFile = function (file) {
+//         return new Promise((resolver) => {
+//             var infos = [file.name, file.size.toString()];
+//             if (file.type.indexOf("image") != -1) {
+//                 var img = new Image();
+//                 img.onload = function () {
+//                     infos.push(this.width.toString());
+//                     infos.push(this.height.toString());
+//                     infos.push(img.src);
+//                     resolver(infos);
+//                 };
+//                 img.src = URL.createObjectURL(file);
+//                 return;
+//             }
+//             resolver(infos);
+//         });
+//     };
+//     var filePromises = [];
+//     for (var i = 0; i < files.length; i++) {
+//         var file = files.item ? files.item(i) : files[i];
 
-        filePromises.push(new Promise((resolver) => {
-            scanFile(file).then(infos => {
-                resolver(infos);
-            });
-        }));
-    }
-    return Promise.all(filePromises);
-};
+//         filePromises.push(new Promise((resolver) => {
+//             scanFile(file).then(infos => {
+//                 resolver(infos);
+//             });
+//         }));
+//     }
+//     return Promise.all(filePromises);
+// };
 window.scanFiles = function (el) {
     if (!el) {
         return [];
