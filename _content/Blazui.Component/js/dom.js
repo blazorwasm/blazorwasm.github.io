@@ -33,7 +33,7 @@ window.clear = function (el) {
     }
     el.value = null;
 };
-async function executePasteUpload(event) {
+window.executePasteUpload = async function (event) {
     var items = event.clipboardData && event.clipboardData.items;
     var files = [];
     if (items && items.length) {
