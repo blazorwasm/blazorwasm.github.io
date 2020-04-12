@@ -48,7 +48,7 @@ window.executePasteUpload = async function (event) {
         }
     }
 
-    let ids = await convertFiles(files).then(async fs => {
+    var ids = await convertFiles(files).then(async fs => {
         return await uploader.invokeMethodAsync("previewFiles", fs);
     });
     for (var j = 0; j < files.length; j++) {
@@ -68,11 +68,11 @@ window.unRegisterPasteUpload = function () {
     this.document.removeEventListener("paste");
 };
 function convertFiles(files) {
-    let scanFile = function (file) {
+    var scanFile = function (file) {
         return new Promise((resolver) => {
-            let infos = [file.name, file.size.toString()];
+            var infos = [file.name, file.size.toString()];
             if (file.type.indexOf("image") != -1) {
-                let img = new Image();
+                var img = new Image();
                 img.onload = function () {
                     infos.push(this.width.toString());
                     infos.push(this.height.toString());
@@ -85,9 +85,9 @@ function convertFiles(files) {
             resolver(infos);
         });
     };
-    let filePromises = [];
+    var filePromises = [];
     for (var i = 0; i < files.length; i++) {
-        let file = files.item ? files.item(i) : files[i];
+        var file = files.item ? files.item(i) : files[i];
 
         filePromises.push(new Promise((resolver) => {
             scanFile(file).then(infos => {
@@ -102,11 +102,11 @@ window.scanFiles = function (el) {
         return [];
     }
 
-    let files = this.convertFiles(el.files);
+    var files = this.convertFiles(el.files);
     return files;
 };
 async function _uploadFile(url, file, callback) {
-    let xhr = new XMLHttpRequest();
+    var xhr = new XMLHttpRequest();
     xhr.open("POST", url);
     xhr.onreadystatechange = function () {
         if (this.readyState != 4) {
@@ -115,18 +115,18 @@ async function _uploadFile(url, file, callback) {
         if (this.status < 200 || this.status >= 300) {
             return;
         }
-        let response = JSON.parse(this.responseText);
+        var response = JSON.parse(this.responseText);
         callback([response.code.toString(), response.message || "", response.id, response.url]);
     };
     xhr.withCredentials = true;
     xhr.setRequestHeader("x-requested-with", "XMLHttpRequest");
-    let formData = new this.FormData();
+    var formData = new this.FormData();
     formData.append("fileContent", file);
     xhr.send(formData);
 };
 window.uploadFile = function (el, fileName, url) {
     return new Promise((resolver, reject) => {
-        let file = null;
+        var file = null;
         for (var i = 0; i < el.files.length; i++) {
             file = el.files[i];
             if (file.name == fileName) {
@@ -172,7 +172,7 @@ window.trigger = function (el, eventName) {
             throw "fireEvent: Couldn't find an event class for event '" + eventName + "'.";
             break;
     }
-    let event = this.document.createEvent(eventClass);
+    var event = this.document.createEvent(eventClass);
     event.initEvent(eventName);
     el.dispatchEvent(event);
 };
