@@ -33,121 +33,113 @@ window.clear = function (el) {
     }
     el.value = null;
 };
-// window.executePasteUpload = async function (event) {
-//     var items = event.clipboardData && event.clipboardData.items;
-//     var files = [];
-//     if (items && items.length) {
-//         // 检索剪切板items
-//         for (var i = items.length - 1; i >= 0; i--) {
-//             if (items[i].kind != "file") {
-//                 continue;
-//             }
-//             file = items[i].getAsFile();
-//             files.push(file);
-//             break;
-//         }
-//     }
-
-//     var ids = await convertFiles(files).then(async fs => {
-//         return await uploader.invokeMethodAsync("previewFiles", fs);
-//     });
-//     for (var j = 0; j < files.length; j++) {
-//         var result = await new Promise(resolver => {
-//             _uploadFile(uploadUrl, files[j], resolver);
-//         });
-//         await uploader.invokeMethodAsync("fileUploaded", result, ids[j]);
-//     }
-//     await uploader.invokeMethodAsync("filesUploaded");
-// };
-window.registerPasteUpload = function (upload, url) {
-    uploader = upload;
-    uploadUrl = url;
-    document.addEventListener('paste', executePasteUpload);
-};
-window.unRegisterPasteUpload = function () {
-    this.document.removeEventListener("paste");
-};
-// function convertFiles(files) {
-//     var scanFile = function (file) {
-//         return new Promise((resolver) => {
-//             var infos = [file.name, file.size.toString()];
-//             if (file.type.indexOf("image") != -1) {
-//                 var img = new Image();
-//                 img.onload = function () {
-//                     infos.push(this.width.toString());
-//                     infos.push(this.height.toString());
-//                     infos.push(img.src);
-//                     resolver(infos);
-//                 };
-//                 img.src = URL.createObjectURL(file);
-//                 return;
-//             }
-//             resolver(infos);
-//         });
-//     };
-//     var filePromises = [];
-//     for (var i = 0; i < files.length; i++) {
-//         var file = files.item ? files.item(i) : files[i];
-
-//         filePromises.push(new Promise((resolver) => {
-//             scanFile(file).then(infos => {
-//                 resolver(infos);
-//             });
-//         }));
-//     }
-//     return Promise.all(filePromises);
-// };
-window.scanFiles = function (el) {
-    if (!el) {
-        return [];
-    }
-
-    var files = this.convertFiles(el.files);
-    return files;
-};
-async function _uploadFile(url, file, callback) {
-    var xhr = new XMLHttpRequest();
-    xhr.open("POST", url);
-    xhr.onreadystatechange = function () {
-        if (this.readyState != 4) {
-            return;
-        }
-        if (this.status < 200 || this.status >= 300) {
-            return;
-        }
-        var response = JSON.parse(this.responseText);
-        callback([response.code.toString(), response.message || "", response.id, response.url]);
-    };
-    xhr.withCredentials = true;
-    xhr.setRequestHeader("x-requested-with", "XMLHttpRequest");
-    var formData = new this.FormData();
-    formData.append("fileContent", file);
-    xhr.send(formData);
-};
-window.uploadFile = function (el, fileName, url) {
-    return new Promise((resolver, reject) => {
-        var file = null;
-        for (var i = 0; i < el.files.length; i++) {
-            file = el.files[i];
-            if (file.name == fileName) {
+try {
+    async function executePasteUpload(event) {
+        var items = event.clipboardData && event.clipboardData.items;
+        var files = [];
+        if (items && items.length) {
+            // 检索剪切板items
+            for (var i = items.length - 1; i >= 0; i--) {
+                if (items[i].kind != "file") {
+                    continue;
+                }
+                file = items[i].getAsFile();
+                files.push(file);
                 break;
             }
         }
-        _uploadFile(url, file, resolver);
-    });
-    //const temporaryFileReader = new FileReader();
-    //return new Promise((resolve, reject) => {
-    //    temporaryFileReader.onerror = () => {
-    //        temporaryFileReader.abort();
-    //        reject(new DOMException("Problem parsing input file."));
-    //    };
-    //    temporaryFileReader.addEventListener("load", function () {
-    //        var data = [el.value, temporaryFileReader.result.split(',')[1]];
-    //        resolve(data);
-    //    }, false);
-    //    temporaryFileReader.readAsDataURL(el.files[0]);
-    //});
-};
+
+        let ids = await convertFiles(files).then(async fs => {
+            return await uploader.invokeMethodAsync("previewFiles", fs);
+        });
+        for (var j = 0; j < files.length; j++) {
+            var result = await new Promise(resolver => {
+                _uploadFile(uploadUrl, files[j], resolver);
+            });
+            await uploader.invokeMethodAsync("fileUploaded", result, ids[j]);
+        }
+        await uploader.invokeMethodAsync("filesUploaded");
+    };
+    window.registerPasteUpload = function (upload, url) {
+        uploader = upload;
+        uploadUrl = url;
+        document.addEventListener('paste', executePasteUpload);
+    };
+    window.unRegisterPasteUpload = function () {
+        this.document.removeEventListener("paste");
+    };
+    function convertFiles(files) {
+        let scanFile = function (file) {
+            return new Promise((resolver) => {
+                let infos = [file.name, file.size.toString()];
+                if (file.type.indexOf("image") != -1) {
+                    let img = new Image();
+                    img.onload = function () {
+                        infos.push(this.width.toString());
+                        infos.push(this.height.toString());
+                        infos.push(img.src);
+                        resolver(infos);
+                    };
+                    img.src = URL.createObjectURL(file);
+                    return;
+                }
+                resolver(infos);
+            });
+        };
+        let filePromises = [];
+        for (var i = 0; i < files.length; i++) {
+            let file = files.item ? files.item(i) : files[i];
+
+            filePromises.push(new Promise((resolver) => {
+                scanFile(file).then(infos => {
+                    resolver(infos);
+                });
+            }));
+        }
+        return Promise.all(filePromises);
+    };
+    window.scanFiles = function (el) {
+        if (!el) {
+            return [];
+        }
+
+        let files = this.convertFiles(el.files);
+        return files;
+    };
+    async function _uploadFile(url, file, callback) {
+        let xhr = new XMLHttpRequest();
+        xhr.open("POST", url);
+        xhr.onreadystatechange = function () {
+            if (this.readyState != 4) {
+                return;
+            }
+            if (this.status < 200 || this.status >= 300) {
+                return;
+            }
+            let response = JSON.parse(this.responseText);
+            callback([response.code.toString(), response.message || "", response.id, response.url]);
+        };
+        xhr.withCredentials = true;
+        xhr.setRequestHeader("x-requested-with", "XMLHttpRequest");
+        let formData = new this.FormData();
+        formData.append("fileContent", file);
+        xhr.send(formData);
+    };
+    window.uploadFile = function (el, fileName, url) {
+        return new Promise((resolver, reject) => {
+            let file = null;
+            for (var i = 0; i < el.files.length; i++) {
+                file = el.files[i];
+                if (file.name == fileName) {
+                    break;
+                }
+            }
+            _uploadFile(url, file, resolver);
+        });
+    };
+} catch{
+
+}
 window.trigger = function (el, eventName) {
     var eventClass = "";
 
@@ -172,7 +164,7 @@ window.trigger = function (el, eventName) {
             throw "fireEvent: Couldn't find an event class for event '" + eventName + "'.";
             break;
     }
-    var event = this.document.createEvent(eventClass);
+    let event = this.document.createEvent(eventClass);
     event.initEvent(eventName);
     el.dispatchEvent(event);
 };
